@@ -1,27 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- VISTA FORMULARIO PARA OPERACIONES -->
+
+    <!-- VISTA FORMULARIO OPERACION CON CREACIÓN RÁPIDA DE CLIENTE -->
     <record id="view_operacion_form" model="ir.ui.view">
         <field name="name">sales.operacion.form</field>
         <field name="model">sales.operacion</field>
         <field name="arch" type="xml">
             <form string="Operación de Venta">
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_crear_cliente_rapido" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-plus-circle"
+                                string="Crear Cliente">
+                        </button>
+                    </div>
+                    
                     <group>
                         <group string="Información Básica">
                             <field name="user_id"/>
-                            <field name="cliente_id"/>
+                            <field name="cliente_id" options="{'no_create': True, 'no_open': True}"/>
                             <field name="producto_id"/>
                             <field name="categoria_id"/>
                         </group>
-                        <group string="Fechas y Documentos">
+                        <group string="Información Documental">
                             <field name="fecha_entrega"/>
-                            <field name="fecha_pago"/>
                             <field name="factura"/>
                             <field name="nota_remision"/>
                             <field name="recibo_pago"/>
                             <field name="op"/>
-                            <field name="nro_nota"/>
                         </group>
                     </group>
                     
@@ -32,76 +40,103 @@
                             <field name="total"/>
                         </group>
                         <group string="Información de Pago">
-                            <field name="monto_pagado"/>
+                            <field name="monto_adelanto"/>
+                            <field name="fecha_pago"/>
+                            <field name="nro_nota"/>
                             <field name="metodo_pago_id"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Saldos">
                             <field name="saldo_operacion"/>
                             <field name="saldo_acumulado"/>
                             <field name="estado_pago"/>
                         </group>
-                    </group>
-                    
-                    <group string="Observaciones">
-                        <field name="observacion" nolabel="1"/>
+                        <group string="Observaciones">
+                            <field name="observacion" nolabel="1"/>
+                        </group>
                     </group>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
             </form>
         </field>
     </record>
 
-    <!-- VISTA LISTA PARA OPERACIONES -->
+    <!-- VISTA LISTA OPERACION -->
     <record id="view_operacion_list" model="ir.ui.view">
         <field name="name">sales.operacion.list</field>
         <field name="model">sales.operacion</field>
         <field name="arch" type="xml">
-            <list string="Operaciones de Venta">
-                <field name="create_date"/>
+            <list string="Operaciones de Venta" default_order="create_date desc">
+                <field name="user_id"/>
                 <field name="cliente_id"/>
+                <field name="fecha_entrega"/>
                 <field name="factura"/>
+                <field name="nota_remision"/>
+                <field name="recibo_pago"/>
+                <field name="op"/>
+                <field name="producto_id"/>
                 <field name="categoria_id"/>
                 <field name="cantidad_kg"/>
                 <field name="precio_unitario"/>
-                <field name="total"/>
-                <field name="monto_pagado"/>
-                <field name="saldo_operacion"/>
-                <field name="estado_pago"/>
+                <field name="total" sum="Total"/>
+                <field name="monto_adelanto" sum="Total Adelantos"/>
+                <field name="fecha_pago"/>
+                <field name="nro_nota"/>
                 <field name="metodo_pago_id"/>
+                <field name="saldo_operacion" sum="Total Saldos"/>
+                <field name="saldo_acumulado"/>
+                <field name="estado_pago"/>
             </list>
         </field>
     </record>
 
-    <!-- VISTA BÚSQUEDA SIMPLIFICADA -->
+    <!-- VISTA BÚSQUEDA OPERACION CORREGIDA -->
     <record id="view_operacion_search" model="ir.ui.view">
         <field name="name">sales.operacion.search</field>
         <field name="model">sales.operacion</field>
         <field name="arch" type="xml">
             <search string="Buscar Operaciones">
                 <field name="cliente_id"/>
+                <field name="producto_id"/>
                 <field name="factura"/>
                 <field name="categoria_id"/>
+                <field name="user_id"/>
                 
-                <filter string="Pagado" name="pagado" domain="[('estado_pago', '=', 'pagado')]"/>
+                <filter string="Adelanto" name="adelanto" domain="[('estado_pago', '=', 'adelanto')]"/>
                 <filter string="Pendiente" name="pendiente" domain="[('estado_pago', '=', 'pendiente')]"/>
                 <filter string="Pago Parcial" name="parcial" domain="[('estado_pago', '=', 'parcial')]"/>
                 
-                <group expand="0" string="Agrupar por">
+                <separator/>
+                <filter string="Hoy" name="today" domain="[('create_date', '>=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <filter string="Esta Semana" name="this_week" domain="[('create_date', '>=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter string="Este Mes" name="this_month" domain="[('create_date', '>=', context_today().strftime('%Y-%m-01'))]"/>
+                
+                <group expand="0" string="Agrupar Por">
                     <filter string="Cliente" name="group_cliente" context="{'group_by': 'cliente_id'}"/>
                     <filter string="Estado de Pago" name="group_estado" context="{'group_by': 'estado_pago'}"/>
+                    <filter string="Usuario" name="group_usuario" context="{'group_by': 'user_id'}"/>
+                    <filter string="Categoría" name="group_categoria" context="{'group_by': 'categoria_id'}"/>
                 </group>
             </search>
         </field>
     </record>
 
-    <!-- ACCIÓN PARA OPERACIONES -->
+    <!-- ACCIÓN OPERACION -->
     <record id="action_operacion" model="ir.actions.act_window">
         <field name="name">Operaciones de Venta</field>
         <field name="res_model">sales.operacion</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                ¡Crea tu primera operación de venta!
+                ¡Registra tu primera operación de venta!
             </p>
             <p>
-                Registra las operaciones de venta de tu negocio.
+                Controla tus ventas, pagos y saldos de manera eficiente.
             </p>
         </field>
     </record>
