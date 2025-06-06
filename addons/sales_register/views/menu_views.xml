@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <menuitem id="menu_sales_register_main"
+        name="Registro de Ventas"
+        sequence="20" />
+
+    <!-- SUBMENÚS -->
+    <menuitem id="menu_operaciones"
+        name="Operaciones"
+        parent="menu_sales_register_main"
+        action="action_operacion"
+        sequence="10" />
+
+    <menuitem id="menu_saldos_cliente"
+        name="Saldos de Clientes"
+        parent="menu_sales_register_main"
+        action="action_saldo_cliente"
+        sequence="20" />
+
+    <!-- MENÚ CONFIGURACIÓN -->
+    <menuitem id="menu_configuracion"
+        name="Configuración"
+        parent="menu_sales_register_main"
+        sequence="100" />
+
+    <menuitem id="menu_categorias"
+        name="Categorías"
+        parent="menu_configuracion"
+        action="action_categoria"
+        sequence="10" />
+
+    <menuitem id="menu_metodos_pago"
+        name="Métodos de Pago"
+        parent="menu_configuracion"
+        action="action_metodo_pago"
+        sequence="20" />
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_categoria_form" model="ir.ui.view">
+        <field name="name">sales.categoria.form</field>
+        <field name="model">sales.categoria</field>
+        <field name="arch" type="xml">
+            <form string="Categoría">
+                <sheet>
+                    <group>
+                        <field name="nombre"/>
+                        <field name="descripcion"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- VISTA LISTA CATEGORÍAS - CAMBIADO DE TREE A LIST -->
+    <record id="view_categoria_list" model="ir.ui.view">
+        <field name="name">sales.categoria.list</field>
+        <field name="model">sales.categoria</field>
+        <field name="arch" type="xml">
+            <list string="Categorías">
+                <field name="nombre"/>
+                <field name="descripcion"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ACCIÓN CATEGORÍAS -->
+    <record id="action_categoria" model="ir.actions.act_window">
+        <field name="name">Categorías</field>
+        <field name="res_model">sales.categoria</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

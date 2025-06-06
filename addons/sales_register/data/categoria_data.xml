@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Datos iniciales para categorías -->
+        <record id="categoria_alimentos" model="sales.categoria">
+            <field name="nombre">Alimentos</field>
+            <field name="descripcion">Productos alimenticios en general</field>
+        </record>
+
+        <record id="categoria_bebidas" model="sales.categoria">
+            <field name="nombre">Bebidas</field>
+            <field name="descripcion">Bebidas alcohólicas y no alcohólicas</field>
+        </record>
+
+        <record id="categoria_abarrotes" model="sales.categoria">
+            <field name="nombre">Abarrotes</field>
+            <field name="descripcion">Productos de consumo básico</field>
+        </record>
+
+        <record id="categoria_limpieza" model="sales.categoria">
+            <field name="nombre">Limpieza</field>
+            <field name="descripcion">Productos de limpieza e higiene</field>
+        </record>
+
+        <!-- Datos iniciales para métodos de pago -->
+        <record id="metodo_efectivo" model="sales.metodo_pago">
+            <field name="nombre">Efectivo</field>
+            <field name="descripcion">Pago en efectivo</field>
+        </record>
+
+        <record id="metodo_transferencia" model="sales.metodo_pago">
+            <field name="nombre">Transferencia Bancaria</field>
+            <field name="descripcion">Transferencia directa a cuenta bancaria</field>
+        </record>
+
+        <record id="metodo_cheque" model="sales.metodo_pago">
+            <field name="nombre">Cheque</field>
+            <field name="descripcion">Pago con cheque</field>
+        </record>
+
+        <record id="metodo_credito" model="sales.metodo_pago">
+            <field name="nombre">Crédito</field>
+            <field name="descripcion">Venta a crédito</field>
+        </record>
+    </data>
+</odoo>

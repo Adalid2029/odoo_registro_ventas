@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- VISTA FORMULARIO PARA OPERACIONES -->
+    <record id="view_operacion_form" model="ir.ui.view">
+        <field name="name">sales.operacion.form</field>
+        <field name="model">sales.operacion</field>
+        <field name="arch" type="xml">
+            <form string="Operación de Venta">
+                <sheet>
+                    <group>
+                        <group string="Información Básica">
+                            <field name="user_id"/>
+                            <field name="cliente_id"/>
+                            <field name="producto_id"/>
+                            <field name="categoria_id"/>
+                        </group>
+                        <group string="Fechas y Documentos">
+                            <field name="fecha_entrega"/>
+                            <field name="fecha_pago"/>
+                            <field name="factura"/>
+                            <field name="nota_remision"/>
+                            <field name="recibo_pago"/>
+                            <field name="op"/>
+                            <field name="nro_nota"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Cantidades y Montos">
+                            <field name="cantidad_kg"/>
+                            <field name="precio_unitario"/>
+                            <field name="total"/>
+                        </group>
+                        <group string="Información de Pago">
+                            <field name="monto_pagado"/>
+                            <field name="metodo_pago_id"/>
+                            <field name="saldo_operacion"/>
+                            <field name="saldo_acumulado"/>
+                            <field name="estado_pago"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Observaciones">
+                        <field name="observacion" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- VISTA LISTA PARA OPERACIONES -->
+    <record id="view_operacion_list" model="ir.ui.view">
+        <field name="name">sales.operacion.list</field>
+        <field name="model">sales.operacion</field>
+        <field name="arch" type="xml">
+            <list string="Operaciones de Venta">
+                <field name="create_date"/>
+                <field name="cliente_id"/>
+                <field name="factura"/>
+                <field name="categoria_id"/>
+                <field name="cantidad_kg"/>
+                <field name="precio_unitario"/>
+                <field name="total"/>
+                <field name="monto_pagado"/>
+                <field name="saldo_operacion"/>
+                <field name="estado_pago"/>
+                <field name="metodo_pago_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- VISTA BÚSQUEDA SIMPLIFICADA -->
+    <record id="view_operacion_search" model="ir.ui.view">
+        <field name="name">sales.operacion.search</field>
+        <field name="model">sales.operacion</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Operaciones">
+                <field name="cliente_id"/>
+                <field name="factura"/>
+                <field name="categoria_id"/>
+                
+                <filter string="Pagado" name="pagado" domain="[('estado_pago', '=', 'pagado')]"/>
+                <filter string="Pendiente" name="pendiente" domain="[('estado_pago', '=', 'pendiente')]"/>
+                <filter string="Pago Parcial" name="parcial" domain="[('estado_pago', '=', 'parcial')]"/>
+                
+                <group expand="0" string="Agrupar por">
+                    <filter string="Cliente" name="group_cliente" context="{'group_by': 'cliente_id'}"/>
+                    <filter string="Estado de Pago" name="group_estado" context="{'group_by': 'estado_pago'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACCIÓN PARA OPERACIONES -->
+    <record id="action_operacion" model="ir.actions.act_window">
+        <field name="name">Operaciones de Venta</field>
+        <field name="res_model">sales.operacion</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                ¡Crea tu primera operación de venta!
+            </p>
+            <p>
+                Registra las operaciones de venta de tu negocio.
+            </p>
+        </field>
+    </record>
+
+</odoo>

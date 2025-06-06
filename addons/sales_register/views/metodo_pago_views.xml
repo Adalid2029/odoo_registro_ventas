@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_metodo_pago_form" model="ir.ui.view">
+        <field name="name">sales.metodo_pago.form</field>
+        <field name="model">sales.metodo_pago</field>
+        <field name="arch" type="xml">
+            <form string="Método de Pago">
+                <sheet>
+                    <group>
+                        <field name="nombre" />
+                        <field name="descripcion" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- VISTA LISTA MÉTODOS DE PAGO - CAMBIADO DE TREE A LIST -->
+    <record id="view_metodo_pago_list" model="ir.ui.view">
+        <field name="name">sales.metodo_pago.list</field>
+        <field name="model">sales.metodo_pago</field>
+        <field name="arch" type="xml">
+            <list string="Métodos de Pago">
+                <field name="nombre" />
+                <field name="descripcion" />
+            </list>
+        </field>
+    </record>
+
+    <!-- ACCIÓN MÉTODOS DE PAGO -->
+    <record id="action_metodo_pago" model="ir.actions.act_window">
+        <field name="name">Métodos de Pago</field>
+        <field name="res_model">sales.metodo_pago</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

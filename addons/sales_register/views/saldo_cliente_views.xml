@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_saldo_cliente_form" model="ir.ui.view">
+        <field name="name">sales.saldo_cliente.form</field>
+        <field name="model">sales.saldo_cliente</field>
+        <field name="arch" type="xml">
+            <form string="Saldo del Cliente">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="cliente_id" options="{'no_create': True}" />
+                            <field name="saldo_total" />
+                            <field name="fecha_actualizacion" />
+                        </group>
+                        <group>
+                            <field name="total_operaciones" />
+                            <field name="cliente_email" />
+                            <field name="cliente_telefono" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- VISTA LISTA SALDO CLIENTE - CAMBIADO DE TREE A LIST -->
+    <record id="view_saldo_cliente_list" model="ir.ui.view">
+        <field name="name">sales.saldo_cliente.list</field>
+        <field name="model">sales.saldo_cliente</field>
+        <field name="arch" type="xml">
+            <list string="Saldos de Clientes" decoration-danger="saldo_total > 0"
+                decoration-success="saldo_total == 0">
+                <field name="cliente_id" />
+                <field name="saldo_total" sum="Total Saldos" />
+                <field name="total_operaciones" sum="Total Operaciones" />
+                <field name="fecha_actualizacion" />
+                <field name="cliente_email" />
+                <field name="cliente_telefono" />
+            </list>
+        </field>
+    </record>
+
+    <!-- ACCIÓN SALDO CLIENTE -->
+    <record id="action_saldo_cliente" model="ir.actions.act_window">
+        <field name="name">Saldos de Clientes</field>
+        <field name="res_model">sales.saldo_cliente</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
