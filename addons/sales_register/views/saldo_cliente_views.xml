@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- VISTA FORMULARIO SALDO CLIENTE -->
+    <!-- VISTA FORMULARIO SALDO CLIENTE CORREGIDA -->
     <record id="view_saldo_cliente_form" model="ir.ui.view">
         <field name="name">sales.saldo_cliente.form</field>
         <field name="model">sales.saldo_cliente</field>
         <field name="arch" type="xml">
             <form string="Saldo del Cliente">
+                <header>
+                    <button name="action_ver_operaciones" type="object" 
+                            string="Ver Operaciones" class="btn-primary"/>
+                    <field name="estado_cliente" widget="badge" 
+                           decoration-success="estado_cliente == 'al_dia'"
+                           decoration-warning="estado_cliente == 'adelanto'"
+                           decoration-danger="estado_cliente == 'pendiente'"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
-                            <field name="cliente_id" options="{'no_create': True}" />
+                            <!-- CLIENTE CON OPCIÓN DE CREAR -->
+                            <field name="cliente_id" 
+                                   options="{'no_create': False, 'create_name_field': 'name'}"
+                                   placeholder="Selecciona o crea un cliente..."/>
                             <field name="saldo_total" />
                             <field name="fecha_actualizacion" />
-                            <field name="estado_cliente" />
                         </group>
                         <group>
                             <field name="total_operaciones" />
-                            <field name="total_ventas" />
-                            <field name="total_pagado" />
                             <field name="cliente_email" />
                             <field name="cliente_telefono" />
                         </group>
                     </group>
-                    <div class="oe_chatter">
-                        <field name="message_follower_ids" widget="mail_followers"/>
-                        <field name="message_ids" widget="mail_thread"/>
-                    </div>
                 </sheet>
             </form>
         </field>
@@ -39,79 +43,47 @@
             <list string="Saldos de Clientes" 
                   decoration-danger="saldo_total > 0"
                   decoration-success="saldo_total == 0"
-                  decoration-info="saldo_total &lt; 0">
+                  decoration-warning="saldo_total &lt; 0">
                 <field name="cliente_id" />
                 <field name="saldo_total" sum="Total Saldos" />
-                <field name="estado_cliente" />
+                <field name="estado_cliente" widget="badge" 
+                       decoration-success="estado_cliente == 'al_dia'"
+                       decoration-warning="estado_cliente == 'adelanto'"
+                       decoration-danger="estado_cliente == 'pendiente'"/>
                 <field name="total_operaciones" sum="Total Operaciones" />
-                <field name="total_ventas" sum="Total Ventas" />
-                <field name="total_pagado" sum="Total Pagado" />
                 <field name="fecha_actualizacion" />
                 <field name="cliente_email" />
                 <field name="cliente_telefono" />
-                <button name="action_ver_operaciones" type="object" string="Ver Operaciones" class="btn-primary"/>
+                <button name="action_ver_operaciones" type="object" 
+                        string="Ver Operaciones" class="btn-sm btn-secondary"/>
             </list>
         </field>
     </record>
 
-    <!-- VISTA BÚSQUEDA SALDO CLIENTE -->
+    <!-- VISTA DE BÚSQUEDA PARA SALDO CLIENTE -->
     <record id="view_saldo_cliente_search" model="ir.ui.view">
         <field name="name">sales.saldo_cliente.search</field>
         <field name="model">sales.saldo_cliente</field>
         <field name="arch" type="xml">
             <search string="Buscar Saldos de Clientes">
-                <field name="cliente_id"/>
-                <field name="estado_cliente"/>
+                <field name="cliente_id" string="Cliente"/>
+                <field name="cliente_email"/>
+                <field name="cliente_telefono"/>
                 
                 <filter string="Al Día" name="al_dia" domain="[('estado_cliente', '=', 'al_dia')]"/>
                 <filter string="Saldo Pendiente" name="pendiente" domain="[('estado_cliente', '=', 'pendiente')]"/>
-                <filter string="Adelanto" name="adelanto" domain="[('estado_cliente', '=', 'adelanto')]"/>
+                <filter string="Adelantos" name="adelanto" domain="[('estado_cliente', '=', 'adelanto')]"/>
                 
-                <group expand="0" string="Agrupar Por">
-                    <filter string="Estado" name="group_estado" context="{'group_by': 'estado_cliente'}"/>
+                <separator/>
+                <filter string="Con Saldo Positivo" name="saldo_positivo" domain="[('saldo_total', '>', 0)]"/>
+                <filter string="Con Saldo Negativo" name="saldo_negativo" domain="[('saldo_total', '&lt;', 0)]"/>
+                <filter string="Saldo Cero" name="saldo_cero" domain="[('saldo_total', '=', 0)]"/>
+                
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado Cliente" name="group_estado" context="{'group_by': 'estado_cliente'}"/>
                     <filter string="Fecha Actualización" name="group_fecha" context="{'group_by': 'fecha_actualizacion'}"/>
                 </group>
             </search>
-        </field>
-    </record>
-
-    <!-- VISTA KANBAN PARA RESUMEN RÁPIDO -->
-    <record id="view_saldo_cliente_kanban" model="ir.ui.view">
-        <field name="name">sales.saldo_cliente.kanban</field>
-        <field name="model">sales.saldo_cliente</field>
-        <field name="arch" type="xml">
-            <kanban>
-                <field name="cliente_id"/>
-                <field name="saldo_total"/>
-                <field name="estado_cliente"/>
-                <field name="total_operaciones"/>
-                <templates>
-                    <t t-name="kanban-box">
-                        <div class="oe_kanban_card oe_kanban_global_click">
-                            <div class="oe_kanban_content">
-                                <div class="o_kanban_record_top">
-                                    <h4><field name="cliente_id"/></h4>
-                                    <span class="float-right">
-                                        <t t-if="record.estado_cliente.raw_value == 'al_dia'">
-                                            <span class="badge badge-success">Al Día</span>
-                                        </t>
-                                        <t t-if="record.estado_cliente.raw_value == 'pendiente'">
-                                            <span class="badge badge-warning">Pendiente</span>
-                                        </t>
-                                        <t t-if="record.estado_cliente.raw_value == 'adelanto'">
-                                            <span class="badge badge-info">Adelanto</span>
-                                        </t>
-                                    </span>
-                                </div>
-                                <div class="o_kanban_record_body">
-                                    <strong>Saldo: <field name="saldo_total"/></strong><br/>
-                                    Operaciones: <field name="total_operaciones"/>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
         </field>
     </record>
 
@@ -119,15 +91,15 @@
     <record id="action_saldo_cliente" model="ir.actions.act_window">
         <field name="name">Saldos de Clientes</field>
         <field name="res_model">sales.saldo_cliente</field>
-        <field name="view_mode">kanban,list,form</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_saldo_cliente_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                ¡Controla los saldos de tus clientes!
+                ¡No hay saldos registrados!
             </p>
             <p>
-                Aquí puedes ver el estado de cuenta de cada cliente y sus operaciones.
+                Los saldos se crean automáticamente cuando registras operaciones.
             </p>
         </field>
     </record>
-
 </odoo>

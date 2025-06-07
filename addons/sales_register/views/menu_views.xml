@@ -1,37 +1,77 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_sales_register_main"
-        name="Registro de Ventas"
-        sequence="20" />
+    <!-- MENÚ PRINCIPAL -->
+    <menuitem id="menu_sales_register_main" 
+              name="Registro de Ventas" 
+              sequence="10" 
+              action="action_operacion"
+              web_icon="sales_register,static/description/icon.png"/>
 
-    <!-- SUBMENÚS -->
-    <menuitem id="menu_operaciones"
-        name="Operaciones"
-        parent="menu_sales_register_main"
-        action="action_operacion"
-        sequence="10" />
+    <!-- SUBMENÚ OPERACIONES -->
+    <menuitem id="menu_sales_operaciones" 
+              name="Operaciones" 
+              parent="menu_sales_register_main" 
+              sequence="10"/>
 
-    <menuitem id="menu_saldos_cliente"
-        name="Saldos de Clientes"
-        parent="menu_sales_register_main"
-        action="action_saldo_cliente"
-        sequence="20" />
+    <!-- OPERACIONES - TODAS -->
+    <menuitem id="menu_operacion_all" 
+              name="Todas las Operaciones" 
+              parent="menu_sales_operaciones" 
+              action="action_operacion" 
+              sequence="10"/>
 
-    <!-- MENÚ CONFIGURACIÓN -->
-    <menuitem id="menu_configuracion"
-        name="Configuración"
-        parent="menu_sales_register_main"
-        sequence="100" />
+    <!-- OPERACIONES - CON SALDOS ACUMULADOS -->
+    <menuitem id="menu_operacion_saldos_acumulados" 
+              name="Saldos Acumulados" 
+              parent="menu_sales_operaciones" 
+              action="action_operacion_saldos_acumulados" 
+              sequence="20"/>
 
-    <menuitem id="menu_categorias"
-        name="Categorías"
-        parent="menu_configuracion"
-        action="action_categoria"
-        sequence="10" />
+    <!-- OPERACIONES - PENDIENTES -->
+    <menuitem id="menu_operacion_pendientes" 
+              name="Pendientes de Pago" 
+              parent="menu_sales_operaciones" 
+              action="action_operacion_pendientes" 
+              sequence="30"/>
 
-    <menuitem id="menu_metodos_pago"
-        name="Métodos de Pago"
-        parent="menu_configuracion"
-        action="action_metodo_pago"
-        sequence="20" />
+    <!-- OPERACIONES - PAGADAS -->
+    <menuitem id="menu_operacion_pagadas" 
+              name="Operaciones Pagadas" 
+              parent="menu_sales_operaciones" 
+              action="action_operacion_pagadas" 
+              sequence="40"/>
+
+    <!-- SUBMENÚ CLIENTES -->
+    <menuitem id="menu_sales_clientes" 
+              name="Clientes" 
+              parent="menu_sales_register_main" 
+              sequence="20"/>
+
+    <!-- SALDOS POR CLIENTE -->
+    <menuitem id="menu_saldo_cliente" 
+              name="Saldos por Cliente" 
+              parent="menu_sales_clientes" 
+              action="action_saldo_cliente" 
+              sequence="10"/>
+
+    <!-- SUBMENÚ CONFIGURACIÓN -->
+    <menuitem id="menu_sales_configuracion" 
+              name="Configuración" 
+              parent="menu_sales_register_main" 
+              sequence="90"/>
+
+    <!-- CATEGORÍAS -->
+    <menuitem id="menu_categoria" 
+              name="Categorías" 
+              parent="menu_sales_configuracion" 
+              action="action_categoria" 
+              sequence="10"/>
+
+    <!-- MÉTODOS DE PAGO -->
+    <menuitem id="menu_metodo_pago" 
+              name="Métodos de Pago" 
+              parent="menu_sales_configuracion" 
+              action="action_metodo_pago" 
+              sequence="20"/>
+
 </odoo>
