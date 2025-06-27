@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="reporte_ventas_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- ENCABEZADO -->
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h1 style="color: #2E8B57;">REPORTE DE VENTAS</h1>
+                                <h3><span t-esc="wizard.tipo_reporte.replace('_', ' ').title()"/></h3>
+                                <hr style="border: 2px solid #2E8B57;"/>
+                            </div>
+                        </div>
+
+                        <!-- INFORMACIÓN DEL PERÍODO -->
+                        <div class="row mb32">
+                            <div class="col-6">
+                                <p><strong>Período:</strong> 
+                                    <span t-field="wizard.fecha_inicio"/> al <span t-field="wizard.fecha_fin"/>
+                                </p>
+                                <p><strong>Estado de Pago:</strong> <span t-esc="wizard.estado_pago.title()"/></p>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Fecha de Generación:</strong> 
+                                    <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                                </p>
+                                <p><strong>Usuario:</strong> <span t-esc="user.name"/></p>
+                            </div>
+                        </div>
+
+                        <!-- OBTENER OPERACIONES -->
+                        <t t-set="operaciones" t-value="request.env['sales.operacion'].search([
+                            ('create_date', '>=', wizard.fecha_inicio),
+                            ('create_date', '&lt;=', wizard.fecha_fin)
+                        ])"/>
+
+                        <!-- APLICAR FILTRO DE ESTADO SI NO ES 'TODOS' -->
+                        <t t-if="wizard.estado_pago != 'todos'">
+                            <t t-set="operaciones" t-value="operaciones.filtered(lambda op: op.estado_pago == wizard.estado_pago)"/>
+                        </t>
+
+                        <!-- CALCULAR TOTALES -->
+                        <t t-set="total_operaciones" t-value="len(operaciones)"/>
+                        <t t-set="total_ventas" t-value="sum(operaciones.mapped('total'))"/>
+                        <t t-set="total_pagado" t-value="sum(operaciones.mapped('monto_pagado'))"/>
+                        <t t-set="saldo_pendiente" t-value="total_ventas - total_pagado"/>
+
+                        <!-- RESUMEN GENERAL -->
+                        <div class="row mb32">
+                            <div class="col-12">
+                                <h3 style="color: #2E8B57;">📊 Resumen General</h3>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="alert alert-info text-center">
+                                            <h4><span t-esc="total_operaciones"/></h4>
+                                            <small>Total Operaciones</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="alert alert-success text-center">
+                                            <h4>Bs. <span t-esc="'{:,.2f}'.format(total_ventas)"/></h4>
+                                            <small>Total Ventas</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="alert alert-primary text-center">
+                                            <h4>Bs. <span t-esc="'{:,.2f}'.format(total_pagado)"/></h4>
+                                            <small>Total Pagado</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="alert alert-warning text-center">
+                                            <h4>Bs. <span t-esc="'{:,.2f}'.format(saldo_pendiente)"/></h4>
+                                            <small>Saldo Pendiente</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- REPORTE DETALLADO -->
+                        <t t-if="wizard.tipo_reporte == 'detallado'">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3 style="color: #2E8B57;">📋 Detalle de Operaciones</h3>
+                                    
+                                    <t t-if="operaciones">
+                                        <table class="table table-striped table-bordered">
+                                            <thead style="background-color: #2E8B57; color: white;">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Fecha</th>
+                                                    <th>Cliente</th>
+                                                    <th>Factura</th>
+                                                    <th>Categoría</th>
+                                                    <th>Total</th>
+                                                    <th>Pagado</th>
+                                                    <th>Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="operaciones" t-as="operacion">
+                                                    <td><span t-esc="operacion.id"/></td>
+                                                    <td><span t-field="operacion.create_date" t-options="{'widget': 'date'}"/></td>
+                                                    <td><span t-field="operacion.cliente_id"/></td>
+                                                    <td><span t-field="operacion.factura"/></td>
+                                                    <td><span t-field="operacion.categoria_id"/></td>
+                                                    <td class="text-right">Bs. <span t-field="operacion.total" t-options="{'widget': 'monetary', 'display_currency': operacion.currency_id}"/></td>
+                                                    <td class="text-right">Bs. <span t-field="operacion.monto_pagado" t-options="{'widget': 'monetary', 'display_currency': operacion.currency_id}"/></td>
+                                                    <td>
+                                                        <span t-if="operacion.estado_pago == 'pagado'" class="badge badge-success">Pagado</span>
+                                                        <span t-if="operacion.estado_pago == 'pendiente'" class="badge badge-danger">Pendiente</span>
+                                                        <span t-if="operacion.estado_pago == 'parcial'" class="badge badge-warning">Parcial</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </t>
+                                    
+                                    <t t-if="not operaciones">
+                                        <div class="alert alert-warning text-center">
+                                            <h4>⚠️ No se encontraron operaciones</h4>
+                                            <p>No hay operaciones para el período y filtros seleccionados.</p>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- REPORTE POR CLIENTE (SIMPLIFICADO) -->
+                        <t t-if="wizard.tipo_reporte == 'resumen_cliente'">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3 style="color: #2E8B57;">👥 Resumen por Cliente</h3>
+                                    
+                                    <t t-if="operaciones">
+                                        <table class="table table-striped table-bordered">
+                                            <thead style="background-color: #2E8B57; color: white;">
+                                                <tr>
+                                                    <th>Cliente</th>
+                                                    <th>Operaciones</th>
+                                                    <th>Total Ventas</th>
+                                                    <th>Total Pagado</th>
+                                                    <th>Saldo Pendiente</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- AGRUPAR MANUALMENTE POR CLIENTE -->
+                                                <t t-set="clientes_procesados" t-value="[]"/>
+                                                <t t-foreach="operaciones" t-as="op">
+                                                    <t t-if="op.cliente_id.name not in clientes_procesados">
+                                                        <t t-set="clientes_procesados" t-value="clientes_procesados + [op.cliente_id.name]"/>
+                                                        <t t-set="ops_cliente" t-value="operaciones.filtered(lambda x: x.cliente_id.id == op.cliente_id.id)"/>
+                                                        <t t-set="cliente_ventas" t-value="sum(ops_cliente.mapped('total'))"/>
+                                                        <t t-set="cliente_pagado" t-value="sum(ops_cliente.mapped('monto_pagado'))"/>
+                                                        <tr>
+                                                            <td><strong><span t-field="op.cliente_id"/></strong></td>
+                                                            <td class="text-center"><span t-esc="len(ops_cliente)"/></td>
+                                                            <td class="text-right">Bs. <span t-esc="'{:,.2f}'.format(cliente_ventas)"/></td>
+                                                            <td class="text-right">Bs. <span t-esc="'{:,.2f}'.format(cliente_pagado)"/></td>
+                                                            <td class="text-right">Bs. <span t-esc="'{:,.2f}'.format(cliente_ventas - cliente_pagado)"/></td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </t>
+                                    
+                                    <t t-if="not operaciones">
+                                        <div class="alert alert-warning text-center">
+                                            <h4>⚠️ No se encontraron operaciones</h4>
+                                            <p>No hay operaciones para el período y filtros seleccionados.</p>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- REPORTE VENTAS DIARIAS (SIMPLIFICADO) -->
+                        <t t-if="wizard.tipo_reporte == 'ventas_diarias'">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3 style="color: #2E8B57;">📅 Ventas por Día</h3>
+                                    
+                                    <t t-if="operaciones">
+                                        <table class="table table-striped table-bordered">
+                                            <thead style="background-color: #2E8B57; color: white;">
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th>Operaciones</th>
+                                                    <th>Total Ventas</th>
+                                                    <th>Total Pagado</th>
+                                                    <th>Promedio por Operación</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- AGRUPAR MANUALMENTE POR FECHA -->
+                                                <t t-set="fechas_procesadas" t-value="[]"/>
+                                                <t t-foreach="operaciones" t-as="op">
+                                                    <t t-set="fecha_str" t-value="op.create_date.strftime('%Y-%m-%d') if op.create_date else 'Sin fecha'"/>
+                                                    <t t-if="fecha_str not in fechas_procesadas">
+                                                        <t t-set="fechas_procesadas" t-value="fechas_procesadas + [fecha_str]"/>
+                                                        <t t-set="ops_fecha" t-value="operaciones.filtered(lambda x: x.create_date.strftime('%Y-%m-%d') == fecha_str if x.create_date else False)"/>
+                                                        <t t-set="fecha_ventas" t-value="sum(ops_fecha.mapped('total'))"/>
+                                                        <t t-set="fecha_pagado" t-value="sum(ops_fecha.mapped('monto_pagado'))"/>
+                                                        <tr>
+                                                            <td><span t-esc="fecha_str"/></td>
+                                                            <td class="text-center"><span t-esc="len(ops_fecha)"/></td>
+                                                            <td class="text-right">Bs. <span t-esc="'{:,.2f}'.format(fecha_ventas)"/></td>
+                                                            <td class="text-right">Bs. <span t-esc="'{:,.2f}'.format(fecha_pagado)"/></td>
+                                                            <td class="text-right">Bs. <span t-esc="'{:,.2f}'.format(fecha_ventas / len(ops_fecha) if len(ops_fecha) > 0 else 0)"/></td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </t>
+                                    
+                                    <t t-if="not operaciones">
+                                        <div class="alert alert-warning text-center">
+                                            <h4>⚠️ No se encontraron operaciones</h4>
+                                            <p>No hay operaciones para el período y filtros seleccionados.</p>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- VISTA DEL WIZARD -->
+    <record id="view_reporte_ventas_wizard_form" model="ir.ui.view">
+        <field name="name">Reporte de Ventas - Wizard</field>
+        <field name="model">sales.reporte.ventas.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Configurar Reporte de Ventas">
+                <sheet>                    
+                    <group>
+                        <group string="Filtros de Fecha">
+                            <field name="fecha_inicio"/>
+                            <field name="fecha_fin"/>
+                        </group>
+                        
+                        <group string="Configuración">
+                            <field name="tipo_reporte"/>
+                            <field name="estado_pago"/>
+                        </group>
+                    </group>
+                </sheet>
+                
+                <footer>
+                    <button name="generar_reporte_pdf" type="object" string="Generar PDF" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACCIÓN PARA ABRIR EL WIZARD -->
+    <record id="action_reporte_ventas_wizard" model="ir.actions.act_window">
+        <field name="name">Generar Reporte de Ventas</field>
+        <field name="res_model">sales.reporte.ventas.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_reporte_ventas_wizard_form"/>
+    </record>
+
+    <!-- ACCIÓN PARA EL REPORTE PDF -->
+    <record id="action_report_ventas" model="ir.actions.report">
+        <field name="name">Reporte de Ventas</field>
+        <field name="model">sales.reporte.ventas.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sales_register.reporte_ventas_template</field>
+        <field name="report_file">sales_register.reporte_ventas_template</field>
+        <field name="print_report_name">'Reporte_Ventas_%s_%s' % (object.fecha_inicio, object.fecha_fin)</field>
+        <field name="binding_model_id" ref="model_sales_reporte_ventas_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ACCIÓN PARA EL MENÚ (la que faltaba antes) -->
+    <record id="action_reporte_ventas_diarias" model="ir.actions.act_window">
+        <field name="name">Reportes de Ventas</field>
+        <field name="res_model">sales.reporte.ventas.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_reporte_ventas_wizard_form"/>
+    </record>
+</odoo>

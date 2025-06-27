@@ -7,7 +7,11 @@ class Operacion(models.Model):
     _description = "Operaciones de venta"
     _order = "create_date desc"
     _rec_name = "display_name"
-
+    currency_id = fields.Many2one(
+        "res.currency",
+        string="Moneda",
+        default=lambda self: self.env.company.currency_id,
+    )
     # RELACIONES CON OTROS MÓDULOS DE ODOO
     # ------------------------------------
     user_id = fields.Many2one(
@@ -19,41 +23,46 @@ class Operacion(models.Model):
         required=True,
         domain=[("is_company", "=", True)],
     )
-    producto_id = fields.Many2one("product.product", string="Producto")
+    categoria_id = fields.Many2one("sales.categoria", string="Categoría")
 
     # CAMPOS DE TU BASE DE DATOS - EXACTOS
     # ------------------------------------
     fecha_entrega = fields.Date(string="Fecha de Entrega")
-    factura = fields.Char(string="Factura", size=50)
     nota_remision = fields.Char(string="Nota de Remisión", size=50)
-    recibo_pago = fields.Char(string="Recibo de Pago", size=50)
+    factura = fields.Char(string="Factura", size=50)
     op = fields.Char(string="OP", size=50)  # CHAR como en tu modelo
-
-    categoria_id = fields.Many2one("sales.categoria", string="Categoría")
+    producto_id = fields.Many2one("product.product", string="Descripcion")
+    unidad = fields.Char(string="Unidad", size=250)
+    tipo = fields.Char(string="Tipo", size=250)
     cantidad_kg = fields.Float(string="Cantidad (Kg)", digits=(10, 2))
     precio_unitario = fields.Float(string="Precio Unitario", digits=(10, 2))
     total = fields.Float(
         string="Total", digits=(10, 2), compute="_compute_total", store=True
     )
 
-    monto_pagado = fields.Float(string="Monto Pagado", digits=(10, 2), required=True)  # COMO EN TU MODELO
     fecha_pago = fields.Date(string="Fecha de Pago")
     nro_nota = fields.Integer(string="Número de Nota")  # INTEGER como en tu modelo
-    metodo_pago_id = fields.Many2one("sales.metodo_pago", string="Método de Pago")
-    observacion = fields.Text(string="Observación")
+    metodo_pago_id = fields.Many2one("sales.metodo_pago", string="Tipo de Pago")
+    observacion = fields.Char(string="Observación", size=250)
+
+    # recibo_pago = fields.Char(string="Recibo de Pago", size=50)
+
+    monto_pagado = fields.Float(
+        string="Pagos a cuenta", digits=(10, 2), required=True
+    )  # COMO EN TU MODELO
 
     # SALDOS - AGREGANDO FUNCIONALIDAD DE SALDO ACUMULADO
     saldo_operacion = fields.Float(
-        string="Saldo Operación",
+        string="Saldo",
         digits=(10, 2),
         compute="_compute_saldo_operacion",
         store=True,
     )
     saldo_acumulado = fields.Float(
-        string="Saldo Acumulado", 
-        digits=(10, 2), 
-        compute="_compute_saldo_acumulado", 
-        store=True
+        string="Cuenta Acumulada",
+        digits=(10, 2),
+        compute="_compute_saldo_acumulado",
+        store=True,
     )
 
     # CAMPOS CALCULADOS ADICIONALES
@@ -86,26 +95,30 @@ class Operacion(models.Model):
             if not record.cliente_id:
                 record.saldo_acumulado = 0
                 continue
-            
+
             # EVITAR CÁLCULO EN REGISTROS NUEVOS (NewId)
-            if not record.id or str(record.id).startswith('NewId'):
+            if not record.id or str(record.id).startswith("NewId"):
                 # Para registros nuevos, calcular basándose en operaciones existentes
-                operaciones_existentes = self.search([
-                    ('cliente_id', '=', record.cliente_id.id)
-                ], order='create_date asc, id asc')
-                
+                operaciones_existentes = self.search(
+                    [("cliente_id", "=", record.cliente_id.id)],
+                    order="create_date asc, id asc",
+                )
+
                 saldo_total = sum(op.saldo_operacion for op in operaciones_existentes)
                 # Agregar el saldo de esta operación nueva
                 record.saldo_acumulado = saldo_total + record.saldo_operacion
                 continue
-                
+
             # Para registros existentes, calcular normalmente
-            operaciones_anteriores = self.search([
-                ('cliente_id', '=', record.cliente_id.id),
-                ('create_date', '<=', record.create_date or fields.Datetime.now()),
-                ('id', '<=', record.id)
-            ], order='create_date asc, id asc')
-            
+            operaciones_anteriores = self.search(
+                [
+                    ("cliente_id", "=", record.cliente_id.id),
+                    ("create_date", "<=", record.create_date or fields.Datetime.now()),
+                    ("id", "<=", record.id),
+                ],
+                order="create_date asc, id asc",
+            )
+
             # Sumar todos los saldos de operaciones
             saldo_total = sum(op.saldo_operacion for op in operaciones_anteriores)
             record.saldo_acumulado = saldo_total
@@ -159,17 +172,17 @@ class Operacion(models.Model):
 
     def _recalcular_saldos_posteriores(self):
         """Recalcula saldos acumulados de operaciones posteriores del mismo cliente"""
-        if not self.cliente_id or not self.id or str(self.id).startswith('NewId'):
+        if not self.cliente_id or not self.id or str(self.id).startswith("NewId"):
             return
-            
+
         # Buscar TODAS las operaciones del cliente para recalcular
-        operaciones_cliente = self.search([
-            ('cliente_id', '=', self.cliente_id.id)
-        ], order='create_date asc, id asc')
-        
+        operaciones_cliente = self.search(
+            [("cliente_id", "=", self.cliente_id.id)], order="create_date asc, id asc"
+        )
+
         # Forzar recálculo de saldos acumulados
         for operacion in operaciones_cliente:
-            if operacion.id and not str(operacion.id).startswith('NewId'):
+            if operacion.id and not str(operacion.id).startswith("NewId"):
                 operacion._compute_saldo_acumulado()
 
     def _actualizar_saldo_cliente(self):
@@ -183,9 +196,11 @@ class Operacion(models.Model):
         )
 
         # Buscar la última operación del cliente para obtener su saldo acumulado final
-        ultima_operacion = self.search([
-            ("cliente_id", "=", self.cliente_id.id)
-        ], order='create_date desc, id desc', limit=1)
+        ultima_operacion = self.search(
+            [("cliente_id", "=", self.cliente_id.id)],
+            order="create_date desc, id desc",
+            limit=1,
+        )
 
         saldo_total = ultima_operacion.saldo_acumulado if ultima_operacion else 0
 
