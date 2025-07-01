@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- CATEGORÍA DE APLICACIÓN -->
+    <record id="module_category_sales_register" model="ir.module.category">
+        <field name="name">Registro de Ventas</field>
+        <field name="description">Módulo de Registro de Ventas - Gestión de permisos</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <!-- GRUPO: USUARIO BÁSICO (Solo crear) -->
+    <record id="group_sales_register_user" model="res.groups">
+        <field name="name">Usuario de Ventas</field>
+        <field name="category_id" ref="module_category_sales_register" />
+        <field name="comment">Usuario que puede crear operaciones pero no modificar ni eliminar</field>
+    </record>
+
+    <!-- GRUPO: MANAGER (Acceso completo) -->
+    <record id="group_sales_register_manager" model="res.groups">
+        <field name="name">Manager de Ventas</field>
+        <field name="category_id" ref="module_category_sales_register" />
+        <field name="comment">Acceso completo al módulo de ventas</field>
+        <field name="implied_ids" eval="[(4, ref('group_sales_register_user'))]" />
+    </record>
+
+    <!-- GRUPO: SOLO REPORTES -->
+    <record id="group_sales_register_reports" model="res.groups">
+        <field name="name">Solo Reportes</field>
+        <field name="category_id" ref="module_category_sales_register" />
+        <field name="comment">Solo puede ver reportes, sin acceso a operaciones</field>
+    </record>
+</odoo>

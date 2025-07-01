@@ -22,10 +22,11 @@
         "views/metodo_pago_views.xml",
         "views/operacion_views.xml",
         "views/saldo_cliente_views.xml",
-        "views/reporte_ventas_wizard_views.xml",  # ← DEBE ESTAR ANTES DE SECURITY
+        "views/reporte_ventas_wizard_views.xml",                                                                                        
         # 3. REPORTES
         "reports/reporte_ventas_template.xml",
         # 4. SEGURIDAD AL FINAL (después de que los modelos existan)
+        "security/sales_register_security.xml", 
         "security/ir.model.access.csv",
         # 5. MENÚS AL FINAL DE TODO
         "views/menu_views.xml",

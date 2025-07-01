@@ -1,6 +1,21 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_sales_categoria_user,sales.categoria.user,model_sales_categoria,base.group_user,1,1,1,1
-access_sales_metodo_pago_user,sales.metodo.pago.user,model_sales_metodo_pago,base.group_user,1,1,1,1
-access_sales_operacion_user,sales.operacion.user,model_sales_operacion,base.group_user,1,1,1,1
-access_sales_saldo_cliente_user,sales.saldo.cliente.user,model_sales_saldo_cliente,base.group_user,1,1,1,0
-access_sales_reporte_ventas_wizard_user,sales.reporte.ventas.wizard.user,model_sales_reporte_ventas_wizard,base.group_user,1,1,1,1
+# PERMISOS PARA USUARIO BÁSICO (Solo crear y leer)
+access_sales_operacion_user,sales.operacion.user,model_sales_operacion,sales_register.group_sales_register_user,1,0,1,0
+access_sales_categoria_user,sales.categoria.user,model_sales_categoria,sales_register.group_sales_register_user,1,0,0,0
+access_sales_metodo_pago_user,sales.metodo.pago.user,model_sales_metodo_pago,sales_register.group_sales_register_user,1,0,0,0
+access_sales_saldo_cliente_user,sales.saldo.cliente.user,model_sales_saldo_cliente,sales_register.group_sales_register_user,1,0,0,0
+access_sales_reporte_wizard_user,sales.reporte.ventas.wizard.user,model_sales_reporte_ventas_wizard,sales_register.group_sales_register_user,0,0,0,0
+
+# PERMISOS PARA MANAGER (Acceso completo)
+access_sales_operacion_manager,sales.operacion.manager,model_sales_operacion,sales_register.group_sales_register_manager,1,1,1,1
+access_sales_categoria_manager,sales.categoria.manager,model_sales_categoria,sales_register.group_sales_register_manager,1,1,1,1
+access_sales_metodo_pago_manager,sales.metodo.pago.manager,model_sales_metodo_pago,sales_register.group_sales_register_manager,1,1,1,1
+access_sales_saldo_cliente_manager,sales.saldo.cliente.manager,model_sales_saldo_cliente,sales_register.group_sales_register_manager,1,1,1,1
+access_sales_reporte_wizard_manager,sales.reporte.ventas.wizard.manager,model_sales_reporte_ventas_wizard,sales_register.group_sales_register_manager,1,1,1,1
+
+# PERMISOS PARA SOLO REPORTES
+access_sales_operacion_reports,sales.operacion.reports,model_sales_operacion,sales_register.group_sales_register_reports,1,0,0,0
+access_sales_categoria_reports,sales.categoria.reports,model_sales_categoria,sales_register.group_sales_register_reports,1,0,0,0
+access_sales_metodo_pago_reports,sales.metodo.pago.reports,model_sales_metodo_pago,sales_register.group_sales_register_reports,1,0,0,0
+access_sales_saldo_cliente_reports,sales.saldo.cliente.reports,model_sales_saldo_cliente,sales_register.group_sales_register_reports,1,0,0,0
+access_sales_reporte_wizard_reports,sales.reporte.ventas.wizard.reports,model_sales_reporte_ventas_wizard,sales_register.group_sales_register_reports,1,1,1,1

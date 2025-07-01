@@ -11,6 +11,12 @@
                         decoration-success="estado_pago == 'pagado'"
                         decoration-warning="estado_pago == 'parcial'"
                         decoration-danger="estado_pago == 'pendiente'" />
+                    <button string="Editar Saldos" type="object" name="recalcular_saldos"
+                        groups="sales_register.group_sales_register_manager"
+                        class="btn-secondary" />
+                    <button string="Ver Historial" type="object" name="ver_historial"
+                        groups="sales_register.group_sales_register_manager"
+                        class="btn-info" />
                 </header>
                 <sheet>
                     <separator string="DATOS DE REGISTRO" />
@@ -57,9 +63,9 @@
                             <field name="metodo_pago_id" />
                             <field name="observacion" />
                             <field name="monto_pagado" />
-                            <field name="observacion" />
-                            <field name="saldo_operacion" />
-                            <field name="saldo_acumulado" />
+                            <field name="saldo_operacion" readonly="1" />
+                            <field name="saldo_acumulado" readonly="1"
+                                groups="sales_register.group_sales_register_manager" />
                         </group>
                     </group>
                 </sheet>
@@ -75,7 +81,7 @@
             <list string="Operaciones de Venta"
                 decoration-success="estado_pago == 'pagado'"
                 decoration-warning="estado_pago == 'parcial'"
-                decoration-danger="estado_pago == 'pendiente'">
+                decoration-danger="estado_pago == 'pendiente'" delete="false">
                 <field name="create_date" string="Fecha de Registro" />
                 <field name="cliente_id" />
                 <field name="factura" />
@@ -85,7 +91,8 @@
                 <field name="total" sum="Total Ventas" />
                 <field name="monto_pagado" sum="Total Pagado" />
                 <field name="saldo_operacion" sum="Total Saldo Operaciones" />
-                <field name="saldo_acumulado" string="Saldo Acumulado" />
+                <field name="saldo_acumulado" string="Saldo Acumulado"
+                    groups="sales_register.group_sales_register_manager" />
                 <field name="estado_pago" widget="badge"
                     decoration-success="estado_pago == 'pagado'"
                     decoration-warning="estado_pago == 'parcial'"

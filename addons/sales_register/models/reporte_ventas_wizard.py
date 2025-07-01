@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 import logging
@@ -22,12 +21,12 @@ class ReporteVentasWizard(models.TransientModel):
 
     tipo_reporte = fields.Selection(
         [
-            ("detallado", "Detallado por Operación"),
-            ("resumen_cliente", "Resumen por Cliente"),
-            ("ventas_diarias", "Ventas Diarias"),
+            ("venta", "Ventas"),
+            ("compra", "Compras"),
+            ("nota_remision", "Notas de Remisión"),
         ],
         string="Tipo de Reporte",
-        default="detallado",
+        default="venta",
         required=True,
     )
 
@@ -67,7 +66,6 @@ class ReporteVentasWizard(models.TransientModel):
                 f"Generando reporte: {self.tipo_reporte} del {self.fecha_inicio} al {self.fecha_fin}"
             )
 
-            # LLAMAR AL REPORTE DIRECTAMENTE
             # El template se encargará de filtrar y procesar los datos
             return self.env.ref("sales_register.action_report_ventas").report_action(
                 self

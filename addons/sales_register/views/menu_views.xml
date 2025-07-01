@@ -5,6 +5,7 @@
         name="Registro de Ventas"
         sequence="10"
         action="action_operacion"
+        groups="sales_register.group_sales_register_user,sales_register.group_sales_register_manager,sales_register.group_sales_register_reports"
         web_icon="sales_register,static/description/icon.png" />
 
     <!-- SUBMENÚ OPERACIONES -->
@@ -25,6 +26,7 @@
         name="Saldos Acumulados"
         parent="menu_sales_operaciones"
         action="action_operacion_saldos_acumulados"
+        groups="sales_register.group_sales_register_user,sales_register.group_sales_register_manager"
         sequence="20" />
 
     <!-- OPERACIONES - PENDIENTES -->
@@ -58,6 +60,7 @@
     <menuitem id="menu_sales_configuracion"
         name="Configuración"
         parent="menu_sales_register_main"
+        groups="sales_register.group_sales_register_manager"
         sequence="90" />
 
     <!-- CATEGORÍAS -->
@@ -78,6 +81,7 @@
         id="menu_sales_reportes"
         name="Reportes"
         parent="menu_sales_register_main"
+        groups="sales_register.group_sales_register_user,sales_register.group_sales_register_manager,sales_register.group_sales_register_reports"
         sequence="30"
     />
     <menuitem
