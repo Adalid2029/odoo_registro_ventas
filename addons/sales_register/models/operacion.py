@@ -226,7 +226,6 @@ class Operacion(models.Model):
             record._recalcular_saldos_posteriores()
             record._actualizar_saldo_cliente()
 
-        # Retornar una acción que actualice la vista
         return {
             "type": "ir.actions.client",
             "tag": "reload",
@@ -234,7 +233,7 @@ class Operacion(models.Model):
 
     def ver_historial(self):
         """Ver historial de operaciones del cliente"""
-        self.ensure_one()  # Asegurar que solo hay un registro
+        self.ensure_one()
 
         if not self.cliente_id:
             raise UserError("No se puede mostrar el historial sin un cliente asociado.")
