@@ -219,3 +219,21 @@ class Operacion(models.Model):
                     "fecha_actualizacion": fields.Datetime.now(),
                 }
             )
+
+    def recalcular_saldos(self):
+        """Recalcula los saldos manualmente"""
+        for record in self:
+            record._recalcular_saldos_posteriores()
+            record._actualizar_saldo_cliente()
+        return True
+
+    def ver_historial(self):
+        """Ver historial de operaciones del cliente"""
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Historial del Cliente",
+            "res_model": "sales.operacion",
+            "view_mode": "tree,form",
+            "domain": [("cliente_id", "=", self.cliente_id.id)],
+            "context": {"default_cliente_id": self.cliente_id.id},
+        }

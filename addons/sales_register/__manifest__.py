@@ -15,6 +15,8 @@
     - Reportes de ventas en PDF
     """,
     "data": [
+        "security/sales_register_security.xml",
+        "security/ir.model.access.csv",
         # 1. DATOS INICIALES PRIMERO
         "data/categoria_data.xml",
         # 2. VISTAS DE MODELOS (esto crea los modelos en la base de datos)
@@ -22,12 +24,10 @@
         "views/metodo_pago_views.xml",
         "views/operacion_views.xml",
         "views/saldo_cliente_views.xml",
-        "views/reporte_ventas_wizard_views.xml",                                                                                        
+        "views/reporte_ventas_wizard_views.xml",
         # 3. REPORTES
         "reports/reporte_ventas_template.xml",
         # 4. SEGURIDAD AL FINAL (después de que los modelos existan)
-        "security/sales_register_security.xml", 
-        "security/ir.model.access.csv",
         # 5. MENÚS AL FINAL DE TODO
         "views/menu_views.xml",
     ],

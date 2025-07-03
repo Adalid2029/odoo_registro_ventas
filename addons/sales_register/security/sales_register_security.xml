@@ -10,22 +10,22 @@
     <!-- GRUPO: USUARIO BÁSICO (Solo crear) -->
     <record id="group_sales_register_user" model="res.groups">
         <field name="name">Usuario de Ventas</field>
-        <field name="category_id" ref="module_category_sales_register" />
+        <field name="category_id" ref="module_category_sales_register"/>
         <field name="comment">Usuario que puede crear operaciones pero no modificar ni eliminar</field>
     </record>
 
     <!-- GRUPO: MANAGER (Acceso completo) -->
     <record id="group_sales_register_manager" model="res.groups">
         <field name="name">Manager de Ventas</field>
-        <field name="category_id" ref="module_category_sales_register" />
+        <field name="category_id" ref="module_category_sales_register"/>
         <field name="comment">Acceso completo al módulo de ventas</field>
-        <field name="implied_ids" eval="[(4, ref('group_sales_register_user'))]" />
+        <field name="implied_ids" eval="[(4, ref('group_sales_register_user'))]"/>
     </record>
 
     <!-- GRUPO: SOLO REPORTES -->
     <record id="group_sales_register_reports" model="res.groups">
         <field name="name">Solo Reportes</field>
-        <field name="category_id" ref="module_category_sales_register" />
+        <field name="category_id" ref="module_category_sales_register"/>
         <field name="comment">Solo puede ver reportes, sin acceso a operaciones</field>
     </record>
 </odoo>
