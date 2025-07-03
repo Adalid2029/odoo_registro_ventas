@@ -225,24 +225,29 @@ class Operacion(models.Model):
         for record in self:
             record._recalcular_saldos_posteriores()
             record._actualizar_saldo_cliente()
+
+        # Retornar una acción que actualice la vista
         return {
             "type": "ir.actions.client",
             "tag": "reload",
         }
 
-    def recalcular_saldos(self):
-        """Recalcula los saldos manualmente"""
-        for record in self:
-            record._recalcular_saldos_posteriores()
-            record._actualizar_saldo_cliente()
+    def ver_historial(self):
+        """Ver historial de operaciones del cliente"""
+        self.ensure_one()  # Asegurar que solo hay un registro
 
-        # Mostrar mensaje de confirmación
+        if not self.cliente_id:
+            raise UserError("No se puede mostrar el historial sin un cliente asociado.")
+
         return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": "Saldos Recalculados",
-                "message": "Los saldos han sido recalculados exitosamente.",
-                "type": "success",
+            "type": "ir.actions.act_window",
+            "name": f"Historial del Cliente: {self.cliente_id.name}",
+            "res_model": "sales.operacion",
+            "view_mode": "tree,form",
+            "domain": [("cliente_id", "=", self.cliente_id.id)],
+            "context": {
+                "default_cliente_id": self.cliente_id.id,
+                "search_default_group_cliente": 1,
             },
+            "target": "current",
         }
