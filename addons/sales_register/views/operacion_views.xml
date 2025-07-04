@@ -169,22 +169,4 @@
         </field>
     </record>
 
-    <!-- ACCIÓN PARA OPERACIONES PENDIENTES -->
-    <record id="action_operacion_pendientes" model="ir.actions.act_window">
-        <field name="name">Operaciones Pendientes</field>
-        <field name="res_model">sales.operacion</field>
-        <field name="view_mode">list,form</field>
-        <field name="domain">[('estado_pago', '=', 'pendiente')]</field>
-        <field name="context">{'search_default_pendiente': 1}</field>
-    </record>
-
-    <!-- ACCIÓN PARA PAGADAS -->
-    <record id="action_operacion_pagadas" model="ir.actions.act_window">
-        <field name="name">Operaciones Pagadas</field>
-        <field name="res_model">sales.operacion</field>
-        <field name="view_mode">list,form</field>
-        <field name="domain">[('estado_pago', '=', 'pagado')]</field>
-        <field name="context">{'search_default_pagado': 1}</field>
-    </record>
-
 </odoo>

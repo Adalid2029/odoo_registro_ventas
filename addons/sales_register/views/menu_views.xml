@@ -29,20 +29,6 @@
         groups="sales_register.group_sales_register_user,sales_register.group_sales_register_manager"
         sequence="20" />
 
-    <!-- OPERACIONES - PENDIENTES -->
-    <menuitem id="menu_operacion_pendientes"
-        name="Pendientes de Pago"
-        parent="menu_sales_operaciones"
-        action="action_operacion_pendientes"
-        sequence="30" />
-
-    <!-- OPERACIONES - PAGADAS -->
-    <menuitem id="menu_operacion_pagadas"
-        name="Operaciones Pagadas"
-        parent="menu_sales_operaciones"
-        action="action_operacion_pagadas"
-        sequence="40" />
-
     <!-- SUBMENÚ CLIENTES -->
     <menuitem id="menu_sales_clientes"
         name="Clientes"
