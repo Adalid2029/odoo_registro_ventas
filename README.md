@@ -109,3 +109,7 @@ docker exec -it odoo_registro_ventas-web-1 odoo -i sales_register -d odoo --stop
 docker exec -it odoo_registro_ventas-web-1 odoo -u sales_register -d odoo --stop-after-init
 docker exec -it odoo_registro_ventas-web-1 odoo shell -d odoo
 select id, currency_id, user_id, cliente_id, categoria_id, producto_id, metodo_pago_id, create_uid, write_uid, factura, op, unidad, tipo, observacion, estado_pago, fecha_entrega, fecha_pago, cantidad_kg, precio_unitario, total, monto_pagado, saldo_operacion, saldo_acumulado from sales_operacion order by id;
+
+docker exec -t odoo_registro_ventas-db-1 pg_dump -U odoo -d odoo -F c -f /tmp/odoo.backup
+docker exec -it odoo_registro_ventas-db-1 ls -lh /tmp
+docker cp odoo_registro_ventas-db-1:/tmp/odoo.backup ./odoo.backup
