@@ -54,18 +54,18 @@
                             <field name="unidad" />
                             <field name="tipo" />
                             <field name="cantidad_kg" />
-                            <field name="precio_unitario" />
-                            <field name="total" />
+                            <field name="precio_unitario" string="Precion Unitario (Bs)" />
+                            <field name="total" string="Total (Bs)" />
                         </group>
                         <group string="Fecha de Pago">
                             <field name="fecha_pago" />
-                            <field name="nro_nota" />
+                            <field name="nro_nota" widget="integer" />
                             <field name="metodo_pago_id" />
                             <field name="observacion" />
                             <field name="monto_pagado" />
-                            <field name="saldo_operacion" readonly="1" />
                             <field name="saldo_acumulado" readonly="1"
                                 groups="sales_register.group_sales_register_manager" />
+                            <field name="saldo_operacion" readonly="1" />
                         </group>
                     </group>
                 </sheet>
@@ -73,7 +73,7 @@
         </field>
     </record>
 
-    <!-- VISTA LISTA PARA OPERACIONES - CORREGIDA -->
+    <!-- VISTA LISTA PARA OPERACIONES -->
     <record id="view_operacion_list" model="ir.ui.view">
         <field name="name">sales.operacion.list</field>
         <field name="model">sales.operacion</field>
@@ -83,21 +83,23 @@
                 decoration-warning="estado_pago == 'parcial'"
                 decoration-danger="estado_pago == 'pendiente'" delete="false">
                 <field name="create_date" string="Fecha de Registro" />
+                <field name="categoria_id" />
                 <field name="cliente_id" />
                 <field name="factura" />
-                <field name="categoria_id" />
+                <field name="nota_remision" />
+                <field name="op" />
+                <field name="observacion" />
                 <field name="cantidad_kg" />
-                <field name="precio_unitario" />
-                <field name="total" sum="Total Ventas" />
-                <field name="monto_pagado" sum="Total Pagado" />
-                <field name="saldo_operacion" sum="Total Saldo Operaciones" />
+                <field name="precio_unitario" string="Precio unitario (Bs)" />
+                <field name="total" sum="Total Ventas" string="Total (Bs)" />
+                <field name="monto_pagado" sum="Total Pagado" string="Pagos a cuenta (Bs)" />
                 <field name="saldo_acumulado" string="Saldo Acumulado"
                     groups="sales_register.group_sales_register_manager" />
+                <field name="saldo_operacion" sum="Total Saldo Operaciones" />
                 <field name="estado_pago" widget="badge"
                     decoration-success="estado_pago == 'pagado'"
                     decoration-warning="estado_pago == 'parcial'"
                     decoration-danger="estado_pago == 'pendiente'" />
-                <field name="metodo_pago_id" />
             </list>
         </field>
     </record>
@@ -138,7 +140,7 @@
 
     <!-- ACCIÓN PARA OPERACIONES -->
     <record id="action_operacion" model="ir.actions.act_window">
-        <field name="name">Operaciones de Venta</field>
+        <field name="name">Estado de registro</field>
         <field name="res_model">sales.operacion</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_operacion_search" />

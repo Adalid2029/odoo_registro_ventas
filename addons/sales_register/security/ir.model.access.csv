@@ -14,3 +14,12 @@ access_sales_categoria_reports,sales.categoria.reports,model_sales_categoria,sal
 access_sales_metodo_pago_reports,sales.metodo.pago.reports,model_sales_metodo_pago,sales_register.group_sales_register_reports,1,0,0,0
 access_sales_saldo_cliente_reports,sales.saldo.cliente.reports,model_sales_saldo_cliente,sales_register.group_sales_register_reports,1,0,0,0
 access_sales_reporte_wizard_reports,sales.reporte.ventas.wizard.reports,model_sales_reporte_ventas_wizard,sales_register.group_sales_register_reports,1,1,1,1
+
+access_sales_unidad_medida_user,sales.unidad.medida.user,model_sales_unidad_medida,base.group_user,1,0,0,0
+access_sales_unidad_medida_manager,sales.unidad.medida.manager,model_sales_unidad_medida,base.group_system,1,1,1,1
+
+access_sales_op_user,sales.op.user,model_sales_op,base.group_user,1,0,0,0
+access_sales_op_manager,sales.op.manager,model_sales_op,base.group_system,1,1,1,1
+
+access_sales_tipo_user,sales.tipo.user,model_sales_tipo,base.group_user,1,0,0,0
+access_sales_tipo_manager,sales.tipo.manager,model_sales_tipo,base.group_system,1,1,1,1

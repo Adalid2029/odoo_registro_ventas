@@ -33,6 +33,7 @@ class Operacion(models.Model):  # Define un modelo/tabla en la base de datos
     categoria_id = fields.Many2one(  # Relación con tabla de categorías
         "sales.categoria",  # Tu tabla personalizada de categorías
         string="Categoría",  # Etiqueta
+        required=True,  # Campo obligatorio
     )
 
     # CAMPOS BÁSICOS DE DATOS
@@ -41,15 +42,20 @@ class Operacion(models.Model):  # Define un modelo/tabla en la base de datos
         string="Nota de Remisión", size=50
     )  # Campo texto limitado a 50 caracteres
     factura = fields.Char(string="Factura", size=50)  # Campo texto limitado
-    op = fields.Char(string="OP", size=50)  # Campo texto limitado
+    # op = fields.Char(string="OP", size=50)  # Campo texto limitado
+    op = fields.Many2one('sales.op', string="OP")
+
 
     producto_id = fields.Many2one(  # Relación con tabla de productos
         "product.product",  # Tabla de productos de Odoo
         string="Descripcion",  # Etiqueta
     )
 
-    unidad = fields.Char(string="Unidad", size=250)  # Campo texto
-    tipo = fields.Char(string="Tipo", size=250)  # Campo texto
+    # unidad = fields.Char(string="Unidad", size=250)  # Campo texto
+    unidad = fields.Many2one('sales.unidad_medida', string="Unidad", required=True)
+
+    # tipo = fields.Char(string="Tipo", size=250)  # Campo texto
+    tipo = fields.Many2one('sales.tipo', string="Tipo", required=True)  # Relación con tipo de producto
     cantidad_kg = fields.Float(
         string="Cantidad (Kg)", digits=(10, 2)
     )  # Campo decimal: 10 dígitos totales, 2 decimales
@@ -68,6 +74,7 @@ class Operacion(models.Model):  # Define un modelo/tabla en la base de datos
     # CAMPOS DE PAGO
     fecha_pago = fields.Date(string="Fecha de Pago")  # Campo fecha
     nro_nota = fields.Integer(string="Número de Nota")  # Campo número entero
+    
     metodo_pago_id = fields.Many2one(
         "sales.metodo_pago", string="Tipo de Pago"
     )  # Relación con métodos de pago

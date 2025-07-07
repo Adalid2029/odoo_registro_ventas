@@ -2,7 +2,7 @@
 <odoo>
     <!-- MENÚ PRINCIPAL -->
     <menuitem id="menu_sales_register_main"
-        name="Registro de Ventas"
+        name="Registros"
         sequence="10"
         action="action_operacion"
         groups="sales_register.group_sales_register_user,sales_register.group_sales_register_manager,sales_register.group_sales_register_reports"
