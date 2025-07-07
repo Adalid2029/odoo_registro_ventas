@@ -1,405 +1,370 @@
-from odoo import models, fields, api  # Importa las clases base de Odoo
-from odoo.exceptions import UserError  # Para mostrar errores al usuario
+from odoo import models, fields, api
+from odoo.exceptions import UserError
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
-class Operacion(models.Model):  # Define un modelo/tabla en la base de datos
-    _name = "sales.operacion"  # Nombre interno del modelo (nombre de la tabla)
-    _description = "Operaciones de venta"  # Descripción del modelo
-    _order = "id asc"  # Orden por defecto: más recientes primero
-    _rec_name = "display_name"  # Campo que se mostrará como nombre del registro
+class Operacion(models.Model):
+    _name = "sales.operacion"
+    _description = "Operaciones de venta"
+    _order = "id asc"
+    _rec_name = "display_name"
 
-    # CAMPO MONEDA (relación con tabla de monedas)
-    currency_id = fields.Many2one(  # Many2one = relación con otra tabla (foreign key)
-        "res.currency",  # Tabla relacionada: res_currency
-        string="Moneda",  # Etiqueta que se muestra en la interfaz
-        default=lambda self: self.env.company.currency_id,  # Valor por defecto: moneda de la empresa
+    # CAMPOS EXISTENTES (mantener todos igual)
+    currency_id = fields.Many2one(
+        "res.currency",
+        string="Moneda",
+        default=lambda self: self.env.company.currency_id,
     )
 
-    # CAMPOS RELACIONALES (foreign keys)
-    user_id = fields.Many2one(  # Relación con tabla de usuarios
-        "res.users",  # Tabla de usuarios
-        string="Usuario",  # Etiqueta
-        required=True,  # Campo obligatorio
-        default=lambda self: self.env.user,  # Valor por defecto: usuario actual
+    user_id = fields.Many2one(
+        "res.users",
+        string="Usuario",
+        required=True,
+        default=lambda self: self.env.user,
     )
 
-    cliente_id = fields.Many2one(  # Relación con tabla de contactos/clientes
-        "res.partner",  # Tabla de contactos
-        string="Cliente",  # Etiqueta
-        required=True,  # Campo obligatorio
-        domain=[("is_company", "=", True)],  # Filtro: solo empresas, no personas
+    cliente_id = fields.Many2one(
+        "res.partner",
+        string="Cliente",
+        required=True,
+        domain=[("is_company", "=", True)],
     )
 
-    categoria_id = fields.Many2one(  # Relación con tabla de categorías
-        "sales.categoria",  # Tu tabla personalizada de categorías
-        string="Categoría",  # Etiqueta
-        required=True,  # Campo obligatorio
+    categoria_id = fields.Many2one(
+        "sales.categoria",
+        string="Categoría",
+        required=True,
     )
 
-    # CAMPOS BÁSICOS DE DATOS
-    fecha_entrega = fields.Date(string="Fecha de Entrega")  # Campo tipo fecha
-    nota_remision = fields.Char(
-        string="Nota de Remisión", size=50
-    )  # Campo texto limitado a 50 caracteres
-    factura = fields.Char(string="Factura", size=50)  # Campo texto limitado
-    # op = fields.Char(string="OP", size=50)  # Campo texto limitado
-    op = fields.Many2one('sales.op', string="OP")
-
-
-    producto_id = fields.Many2one(  # Relación con tabla de productos
-        "product.product",  # Tabla de productos de Odoo
-        string="Descripcion",  # Etiqueta
-    )
-
-    # unidad = fields.Char(string="Unidad", size=250)  # Campo texto
-    unidad = fields.Many2one('sales.unidad_medida', string="Unidad")
-
-    # tipo = fields.Char(string="Tipo", size=250)  # Campo texto
-    tipo = fields.Many2one('sales.tipo', string="Tipo")  # Relación con tipo de producto
-    cantidad_kg = fields.Float(
-        string="Cantidad (Kg)", digits=(10, 2)
-    )  # Campo decimal: 10 dígitos totales, 2 decimales
-    precio_unitario = fields.Float(
-        string="Precio Unitario", digits=(10, 2)
-    )  # Campo decimal
+    fecha_entrega = fields.Date(string="Fecha de Entrega")
+    nota_remision = fields.Char(string="Nota de Remisión", size=50)
+    factura = fields.Char(string="Factura", size=50)
+    op = fields.Many2one("sales.op", string="OP")
+    producto_id = fields.Many2one("product.product", string="Descripcion")
+    unidad = fields.Many2one("sales.unidad_medida", string="Unidad")
+    tipo = fields.Many2one("sales.tipo", string="Tipo")
+    cantidad_kg = fields.Float(string="Cantidad (Kg)", digits=(10, 2))
+    precio_unitario = fields.Float(string="Precio Unitario", digits=(10, 2))
 
     # CAMPO CALCULADO AUTOMÁTICAMENTE
     total = fields.Float(
-        string="Total",  # Etiqueta
-        digits=(10, 2),  # Precisión decimal
-        compute="_compute_total",  # Función que calcula este campo automáticamente
-        store=True,  # Guardar el resultado en la base de datos (no calcular cada vez)
+        string="Total",
+        digits=(10, 2),
+        compute="_compute_total",
+        store=True,
     )
 
     # CAMPOS DE PAGO
-    fecha_pago = fields.Date(string="Fecha de Pago")  # Campo fecha
-    nro_nota = fields.Integer(string="Número de Nota")  # Campo número entero
-    
-    metodo_pago_id = fields.Many2one(
-        "sales.metodo_pago", string="Tipo de Pago"
-    )  # Relación con métodos de pago
-    observacion = fields.Char(string="Observación", size=250)  # Campo texto
-    monto_pagado = fields.Float(
-        string="Pagos a cuenta", digits=(10, 2), required=True
-    )  # Campo decimal obligatorio
+    fecha_pago = fields.Date(string="Fecha de Pago")
+    nro_nota = fields.Integer(string="Número de Nota")
+    metodo_pago_id = fields.Many2one("sales.metodo_pago", string="Tipo de Pago")
+    observacion = fields.Char(string="Observación", size=250)
+    monto_pagado = fields.Float(string="Pagos a cuenta", digits=(10, 2), required=True)
 
-    # CAMPOS CALCULADOS AUTOMÁTICAMENTE
+    # CAMPOS CALCULADOS - MODIFICADOS PARA SER ALMACENADOS
     saldo_operacion = fields.Float(
-        string="Saldo",  # Etiqueta
-        digits=(10, 2),  # Precisión decimal
-        compute="_compute_saldo_operacion",  # Función que calcula automáticamente
-        store=True,  # Guardar resultado en base de datos
+        string="Saldo",
+        digits=(10, 2),
+        default=0.0,
+        help="Deuda pendiente de esta operación",
     )
 
     saldo_acumulado = fields.Float(
-        string="Cuenta Acumulada",  # Etiqueta
-        digits=(10, 2),  # Precisión decimal
-        compute="_compute_saldo_acumulado",  # Función que calcula automáticamente
-        store=True,  # Guardar resultado en base de datos
+        string="Cuenta Acumulada",
+        digits=(10, 2),
+        default=0.0,
+        help="Anticipo acumulado del cliente",
     )
 
-    # CAMPO CALCULADO PARA NOMBRE DESCRIPTIVO
     display_name = fields.Char(
-        string="Nombre",  # Etiqueta
-        compute="_compute_display_name",  # Función que calcula automáticamente
-        # Sin store=True = se calcula cada vez que se necesita (no se guarda)
+        string="Nombre",
+        compute="_compute_display_name",
     )
 
-    # CAMPO DE SELECCIÓN (dropdown/lista desplegable)
     estado_pago = fields.Selection(
-        [  # Lista de opciones: (valor_interno, etiqueta_mostrada)
-            ("pagado", "Pagado"),  # Opción 1
-            ("pendiente", "Pendiente"),  # Opción 2
-            ("parcial", "Pago Parcial"),  # Opción 3
-            ("anticipo", "Anticipo"),  # Opción 4
+        [
+            ("CANCELADO", "Cancelado"),
+            ("PENDIENTE", "Pendiente"),
+            ("ANTICIPO", "Anticipo"),
         ],
-        string="Estado de Pago",  # Etiqueta del campo
-        compute="_compute_estado_pago",  # Función que calcula automáticamente
-        store=True,  # Guardar resultado en base de datos
+        string="Estado de Pago",
+        default="PENDIENTE",
     )
 
-    # FUNCIÓN QUE CALCULA EL TOTAL
-    @api.depends(
-        "cantidad_kg", "precio_unitario"
-    )  # Se ejecuta cuando cambian estos campos
+    # ========== FUNCIONES COMPUTE BÁSICAS ==========
+
+    @api.depends("cantidad_kg", "precio_unitario")
     def _compute_total(self):
         """Calcula el total de la operación"""
-        for record in self:  # Para cada registro (si se procesan varios a la vez)
-            # Multiplica cantidad por precio (or 0 = si es None/vacío, usar 0)
+        for record in self:
             record.total = (record.cantidad_kg or 0) * (record.precio_unitario or 0)
 
-    # FUNCIÓN QUE CALCULA EL SALDO
-    @api.depends(
-        "cliente_id", "total", "monto_pagado"
-    )  # Se ejecuta cuando cambian estos campos
-    def _compute_saldo_operacion(self):
-        """Saldo = balance acumulado real del cliente (mínimo 0)"""
-        for record in self:  # Para cada registro
-            if not record.cliente_id:  # Si no tiene cliente asignado
-                record.saldo_operacion = 0  # Saldo = 0
-                continue  # Pasar al siguiente registro
-
-            # CASO 1: REGISTROS NUEVOS (que aún no están guardados)
-            if not record.id or str(record.id).startswith("NewId"):
-                # Buscar todas las operaciones existentes del mismo cliente
-                operaciones_existentes = self.search(
-                    [
-                        ("cliente_id", "=", record.cliente_id.id)
-                    ],  # Filtro: mismo cliente
-                    order="create_date asc, id asc",  # Ordenar por fecha ascendente
-                )
-
-                # Calcular balance total de operaciones existentes
-                balance_total = sum(
-                    (op.total or 0)
-                    - (op.monto_pagado or 0)  # total - pago para cada operación
-                    for op in operaciones_existentes  # Para todas las operaciones
-                )
-
-                # Agregar el balance de esta operación nueva
-                balance_operacion = (record.total or 0) - (record.monto_pagado or 0)
-                balance_final = balance_total + balance_operacion
-
-                # SALDO = máximo 0 (si balance es negativo, saldo = 0)
-                record.saldo_operacion = max(0, balance_final)
-                continue  # Pasar al siguiente registro
-
-            # CASO 2: REGISTROS EXISTENTES (ya guardados en base de datos)
-            # Buscar operaciones anteriores del mismo cliente (incluyendo esta)
-            operaciones_anteriores = self.search(
-                [
-                    ("cliente_id", "=", record.cliente_id.id),  # Mismo cliente
-                    (
-                        "create_date",
-                        "<=",
-                        record.create_date or fields.Datetime.now(),
-                    ),  # Fecha menor o igual
-                    ("id", "<=", record.id),  # ID menor o igual (para mantener orden)
-                ],
-                order="create_date asc, id asc",  # Ordenar por fecha
-            )
-
-            # Calcular balance acumulado hasta esta operación
-            balance_total = sum(
-                (op.total or 0) - (op.monto_pagado or 0)  # total - pago
-                for op in operaciones_anteriores  # Para todas las operaciones anteriores
-            )
-
-            # SALDO = balance acumulado (mínimo 0)
-            record.saldo_operacion = max(0, balance_total)
-
-    # FUNCIÓN QUE CALCULA LA CUENTA ACUMULADA
-    @api.depends("total", "monto_pagado")  # Se ejecuta cuando cambian estos campos
-    def _compute_saldo_acumulado(self):
-        """Cuenta acumulada = EXCESO de pago en esta operación específica"""
-        for record in self:  # Para cada registro
-            # Obtener valores (or 0 = si es None/vacío, usar 0)
-            total = record.total or 0
-            pago = record.monto_pagado or 0
-
-            # CUENTA ACUMULADA = máximo 0 del exceso en ESTA operación
-            # Si pago > total, cuenta = pago - total
-            # Si pago <= total, cuenta = 0
-            record.saldo_acumulado = max(0, pago - total)
-
-    @api.depends("cliente_id", "total", "monto_pagado", "create_date")
-    def _compute_estado_pago(self):
-        """Estado considerando operaciones anteriores - SIN ERROR"""
-        for record in self:
-            total = record.total or 0
-            pago = record.monto_pagado or 0
-
-            # ✅ CALCULAR SALDO ANTERIOR PARA TODOS LOS CASOS
-            if record.cliente_id:
-                if not record.id or str(record.id).startswith("NewId"):
-                    # Para registros nuevos: buscar todas las operaciones existentes
-                    operaciones_anteriores = self.search(
-                        [("cliente_id", "=", record.cliente_id.id)],
-                        order="create_date asc, id asc",
-                    )
-                else:
-                    # Para registros existentes: buscar operaciones anteriores
-                    operaciones_anteriores = self.search(
-                        [
-                            ("cliente_id", "=", record.cliente_id.id),
-                            (
-                                "create_date",
-                                "<",
-                                record.create_date or fields.Datetime.now(),
-                            ),
-                            ("id", "<", record.id),
-                        ],
-                        order="create_date asc, id asc",
-                    )
-
-                # Calcular saldo pendiente anterior
-                saldo_pendiente_anterior = sum(
-                    (op.total or 0) - (op.monto_pagado or 0)
-                    for op in operaciones_anteriores
-                )
-            else:
-                saldo_pendiente_anterior = 0
-
-            # Calcular balance total = deuda anterior + deuda actual - pago actual
-            saldo_actual = max(0, (total + saldo_pendiente_anterior) - pago)
-
-            # 🎯 LÓGICA CORREGIDA PARA EL ESTADO - ORDEN CORRECTO:
-            if total == 0 and pago > 0 and saldo_pendiente_anterior == 0:
-                record.estado_pago = "anticipo"  # PRIMERO: anticipo sin deuda anterior
-            elif saldo_actual == 0:
-                record.estado_pago = "pagado"  # SEGUNDO: todo saldado
-            elif pago == 0:
-                record.estado_pago = "pendiente"  # TERCERO: no pagó nada
-            else:
-                record.estado_pago = "parcial"  # CUARTO: pago parcial
-
-    # FUNCIÓN QUE CALCULA EL NOMBRE DESCRIPTIVO
-    @api.depends(
-        "cliente_id", "factura", "create_date"
-    )  # Se ejecuta cuando cambian estos campos
+    @api.depends("cliente_id", "factura", "create_date")
     def _compute_display_name(self):
         """Genera un nombre descriptivo para la operación"""
-        for record in self:  # Para cada registro
-            if record.cliente_id and record.factura:  # Si tiene cliente y factura
-                # Formato: "Nombre Cliente - Número Factura"
+        for record in self:
+            if record.cliente_id and record.factura:
                 record.display_name = f"{record.cliente_id.name} - {record.factura}"
-            elif record.cliente_id:  # Si solo tiene cliente (sin factura)
-                # Formato: "Nombre Cliente - Fecha"
+            elif record.cliente_id:
                 fecha_str = (
                     record.create_date.strftime("%d/%m/%Y")
                     if record.create_date
                     else "Nueva"
                 )
                 record.display_name = f"{record.cliente_id.name} - {fecha_str}"
-            else:  # Si no tiene cliente
-                # Formato: "Operación #ID"
+            else:
                 record.display_name = f"Operación #{record.id or 'Nueva'}"
 
-    # FUNCIÓN QUE SE EJECUTA AL CREAR NUEVOS REGISTROS
+    # ========== LÓGICA PRINCIPAL DE SALDOS ==========
+
+    def _recalcular_saldos_posteriores(self):
+        """
+        Recalcula correctamente los saldos de operación y acumulados del cliente,
+        respetando el flujo de deuda acumulada y anticipos.
+        """
+        if not self.cliente_id:
+            _logger.warning("⛔ No hay cliente asignado, no se recalcula saldo.")
+            return
+
+        _logger.info(
+            f"🔄 Recalculando saldos para cliente ID={self.cliente_id.id} - {self.cliente_id.name}"
+        )
+
+        # Obtener todas las operaciones del cliente ordenadas cronológicamente
+        operaciones = self.search(
+            [("cliente_id", "=", self.cliente_id.id)],
+            order="create_date asc, id asc",
+        )
+
+        # Variables acumulativas
+        deuda_total_pendiente = 0.0  # Suma de todas las deudas no pagadas
+        saldo_anticipo = 0.0  # Dinero a favor del cliente (anticipos)
+
+        for operacion in operaciones:
+            total_operacion = operacion.total or 0.0
+            pago_operacion = operacion.monto_pagado or 0.0
+
+            # Resetear valores para esta operación
+            usado_en_deuda_anterior = 0.0
+            saldo_operacion = 0.0
+            estado_pago = "PENDIENTE"
+
+            # CASO 1: Operación con venta (total > 0)
+            if total_operacion > 0:
+                # Primero usar anticipos disponibles
+                if saldo_anticipo > 0:
+                    aplicado_anticipo = min(saldo_anticipo, total_operacion)
+                    saldo_anticipo -= aplicado_anticipo
+                    total_operacion -= aplicado_anticipo
+                    usado_en_deuda_anterior = aplicado_anticipo
+
+                    _logger.info(
+                        f"💰 Usando anticipo: {aplicado_anticipo:.2f} para operación {operacion.id}"
+                    )
+
+                # Luego aplicar el pago de esta operación
+                if pago_operacion >= total_operacion:
+                    # Pago completo o exceso
+                    exceso = pago_operacion - total_operacion
+                    saldo_anticipo += exceso
+                    saldo_operacion = 0.0
+                    estado_pago = "CANCELADO"
+
+                    if exceso > 0:
+                        _logger.info(
+                            f"💵 Exceso de pago: {exceso:.2f} queda como anticipo"
+                        )
+                else:
+                    # Pago parcial - queda deuda
+                    saldo_operacion = total_operacion - pago_operacion
+                    deuda_total_pendiente += saldo_operacion
+                    estado_pago = "PENDIENTE"
+
+            # CASO 2: Operación solo de pago (total = 0, pero pago > 0)
+            elif pago_operacion > 0:
+                # Usar el pago para cancelar deudas anteriores
+                if deuda_total_pendiente > 0:
+                    aplicado_deuda = min(pago_operacion, deuda_total_pendiente)
+                    deuda_total_pendiente -= aplicado_deuda
+                    usado_en_deuda_anterior = aplicado_deuda
+
+                    # Si sobra dinero, queda como anticipo
+                    exceso = pago_operacion - aplicado_deuda
+                    if exceso > 0:
+                        saldo_anticipo += exceso
+                        estado_pago = "ANTICIPO"
+                    else:
+                        estado_pago = "CANCELADO"
+
+                    _logger.info(
+                        f"💳 Pago aplicado a deuda anterior: {aplicado_deuda:.2f}"
+                    )
+                else:
+                    # No hay deudas, todo queda como anticipo
+                    saldo_anticipo += pago_operacion
+                    estado_pago = "ANTICIPO"
+
+                saldo_operacion = 0.0
+
+            # CASO 3: Operación sin venta ni pago (registro informativo)
+            else:
+                saldo_operacion = 0.0
+                estado_pago = "CANCELADO"
+
+            # Log detallado del cálculo
+            _logger.info(
+                f"🧾 Operación ID={operacion.id} | Total={operacion.total:.2f} | "
+                f"Pago={pago_operacion:.2f} | Usado en deuda anterior={usado_en_deuda_anterior:.2f} | "
+                f"Saldo Acumulado={saldo_anticipo:.2f} | Nuevo Saldo={saldo_operacion:.2f} | "
+                f"Estado={estado_pago}"
+            )
+
+            # Actualizar la operación directamente (sin triggers)
+            self.env.cr.execute(
+                """
+                UPDATE sales_operacion 
+                SET saldo_operacion = %s, saldo_acumulado = %s, estado_pago = %s 
+                WHERE id = %s
+            """,
+                (saldo_operacion, saldo_anticipo, estado_pago, operacion.id),
+            )
+
+        # Actualizar operaciones que cambiaron de PENDIENTE a CANCELADO
+        self._recalcular_estados_anteriores(operaciones, deuda_total_pendiente)
+
+    def _recalcular_estados_anteriores(self, operaciones, deuda_restante):
+        """
+        Recalcula los estados de operaciones anteriores que pudieron cambiar
+        de PENDIENTE a CANCELADO debido a pagos posteriores.
+        """
+        # Recorrer operaciones con deuda de atrás hacia adelante
+        for operacion in reversed(operaciones):
+            if operacion.saldo_operacion > 0 and deuda_restante == 0:
+                # Esta operación tenía deuda pero ya fue pagada posteriormente
+                self.env.cr.execute(
+                    """
+                    UPDATE sales_operacion 
+                    SET estado_pago = 'CANCELADO'
+                    WHERE id = %s
+                """,
+                    (operacion.id,),
+                )
+                _logger.info(
+                    f"✅ Operación {operacion.id} cambió a CANCELADO (pagada posteriormente)"
+                )
+
+    # ========== MÉTODOS DE ESCRITURA/CREACIÓN ==========
+
     def create(self, vals_list):
         """Al crear una operación, actualiza los saldos del cliente"""
-        if not isinstance(vals_list, list):  # Si vals_list no es una lista
-            vals_list = [vals_list]  # Convertirla en lista
+        if not isinstance(vals_list, list):
+            vals_list = [vals_list]
 
-        # Llamar al método create original de Odoo para crear los registros
         operaciones = super(Operacion, self).create(vals_list)
 
-        for operacion in operaciones:  # Para cada operación creada
-            operacion._recalcular_saldos_posteriores()  # Recalcular saldos
-            operacion._actualizar_saldo_cliente()  # Actualizar tabla de saldos
-        return operaciones  # Devolver las operaciones creadas
+        for operacion in operaciones:
+            if operacion.cliente_id:
+                operacion._recalcular_saldos_posteriores()
+                operacion._actualizar_saldo_cliente()
+        return operaciones
 
-    # FUNCIÓN QUE SE EJECUTA AL MODIFICAR REGISTROS EXISTENTES
     def write(self, vals):
         """Al modificar una operación, actualiza los saldos del cliente"""
-        # Llamar al método write original de Odoo para guardar cambios
         result = super(Operacion, self).write(vals)
 
-        # Si se modificaron campos que afectan los saldos
-        if any(field in vals for field in ["total", "monto_pagado", "cliente_id"]):
-            for record in self:  # Para cada registro modificado
-                record._recalcular_saldos_posteriores()  # Recalcular saldos
-                record._actualizar_saldo_cliente()  # Actualizar tabla de saldos
-        return result  # Devolver el resultado
+        if any(
+            field in vals
+            for field in [
+                "total",
+                "monto_pagado",
+                "cliente_id",
+                "cantidad_kg",
+                "precio_unitario",
+            ]
+        ):
+            clientes_afectados = set()
+            for record in self:
+                if record.cliente_id:
+                    clientes_afectados.add(record.cliente_id.id)
 
-    # FUNCIÓN AUXILIAR PARA RECALCULAR SALDOS
-    def _recalcular_saldos_posteriores(self):
-        """Recalcula saldos acumulados de operaciones posteriores del mismo cliente"""
-        # Si no tiene cliente, ID, o es un registro nuevo, no hacer nada
-        if not self.cliente_id or not self.id or str(self.id).startswith("NewId"):
-            return
+            # Recalcular para cada cliente afectado
+            for cliente_id in clientes_afectados:
+                operacion_cliente = self.search(
+                    [("cliente_id", "=", cliente_id)], limit=1
+                )
+                if operacion_cliente:
+                    operacion_cliente._recalcular_saldos_posteriores()
+                    operacion_cliente._actualizar_saldo_cliente()
 
-        # Buscar TODAS las operaciones del mismo cliente
-        operaciones_cliente = self.search(
-            [("cliente_id", "=", self.cliente_id.id)],  # Filtro: mismo cliente
-            order="create_date asc, id asc",  # Ordenar por fecha
-        )
+        return result
 
-        # Recalcular campos computados para todas las operaciones
-        for operacion in operaciones_cliente:
-            if operacion.id and not str(operacion.id).startswith(
-                "NewId"
-            ):  # Solo registros existentes
-                operacion._compute_saldo_acumulado()  # Recalcular cuenta acumulada
-                operacion._compute_saldo_operacion()  # Recalcular saldo
+    # ========== MÉTODOS AUXILIARES ==========
 
-    # FUNCIÓN AUXILIAR PARA ACTUALIZAR TABLA DE SALDOS POR CLIENTE
     def _actualizar_saldo_cliente(self):
         """Actualiza el saldo total del cliente en la tabla sales.saldo_cliente"""
-        if not self.cliente_id:  # Si no tiene cliente, no hacer nada
+        if not self.cliente_id:
             return
 
-        # Obtener modelo de saldos por cliente
         SaldoCliente = self.env["sales.saldo_cliente"]
 
-        # Buscar si ya existe un registro de saldo para este cliente
         saldo_cliente = SaldoCliente.search(
-            [("cliente_id", "=", self.cliente_id.id)],  # Filtro: mismo cliente
-            limit=1,  # Solo el primer resultado
+            [("cliente_id", "=", self.cliente_id.id)],
+            limit=1,
         )
 
-        # Buscar la última operación del cliente para obtener su saldo final
         ultima_operacion = self.search(
-            [("cliente_id", "=", self.cliente_id.id)],  # Filtro: mismo cliente
-            order="create_date desc, id desc",  # Ordenar por fecha descendente (más reciente primero)
-            limit=1,  # Solo la primera (más reciente)
+            [("cliente_id", "=", self.cliente_id.id)],
+            order="create_date desc, id desc",
+            limit=1,
         )
 
-        # Obtener el saldo total del cliente (saldo acumulado de la última operación)
         saldo_total = ultima_operacion.saldo_acumulado if ultima_operacion else 0
 
-        if saldo_cliente:  # Si ya existe un registro de saldo para este cliente
-            # Actualizar el registro existente
+        if saldo_cliente:
             saldo_cliente.write(
                 {
-                    "saldo_total": saldo_total,  # Nuevo saldo total
-                    "fecha_actualizacion": fields.Datetime.now(),  # Fecha actual
+                    "saldo_total": saldo_total,
+                    "fecha_actualizacion": fields.Datetime.now(),
                 }
             )
-        else:  # Si no existe un registro de saldo para este cliente
-            # Crear un nuevo registro
+        else:
             SaldoCliente.create(
                 {
-                    "cliente_id": self.cliente_id.id,  # ID del cliente
-                    "saldo_total": saldo_total,  # Saldo total
-                    "fecha_actualizacion": fields.Datetime.now(),  # Fecha actual
+                    "cliente_id": self.cliente_id.id,
+                    "saldo_total": saldo_total,
+                    "fecha_actualizacion": fields.Datetime.now(),
                 }
             )
 
-    # FUNCIÓN ACCESIBLE DESDE LA INTERFAZ (botón)
     def recalcular_saldos(self):
         """Recalcula los saldos manualmente"""
-        for record in self:  # Para cada registro seleccionado
-            record._recalcular_saldos_posteriores()  # Recalcular saldos
-            record._actualizar_saldo_cliente()  # Actualizar tabla de saldos
+        for record in self:
+            record._recalcular_saldos_posteriores()
+            record._actualizar_saldo_cliente()
 
-        # Devolver acción para recargar la página
         return {
-            "type": "ir.actions.client",  # Tipo de acción: cliente
-            "tag": "reload",  # Etiqueta: recargar página
+            "type": "ir.actions.client",
+            "tag": "reload",
         }
 
-    # FUNCIÓN ACCESIBLE DESDE LA INTERFAZ (botón)
     def ver_historial(self):
         """Ver historial de operaciones del cliente"""
-        self.ensure_one()  # Asegurarse de que solo hay un registro seleccionado
+        self.ensure_one()
 
-        if not self.cliente_id:  # Si no tiene cliente
-            # Mostrar error al usuario
+        if not self.cliente_id:
             raise UserError("No se puede mostrar el historial sin un cliente asociado.")
 
-        # Devolver acción para abrir nueva ventana con historial del cliente
         return {
-            "type": "ir.actions.act_window",  # Tipo: ventana
-            "name": f"Historial del Cliente: {self.cliente_id.name}",  # Título de la ventana
-            "res_model": "sales.operacion",  # Modelo a mostrar
-            "view_mode": "tree,form",  # Vistas: lista y formulario
-            "domain": [
-                ("cliente_id", "=", self.cliente_id.id)
-            ],  # Filtro: mismo cliente
-            "context": {  # Contexto (variables adicionales)
-                "default_cliente_id": self.cliente_id.id,  # Cliente por defecto al crear nuevos
-                "search_default_group_cliente": 1,  # Agrupar por cliente por defecto
+            "type": "ir.actions.act_window",
+            "name": f"Historial del Cliente: {self.cliente_id.name}",
+            "res_model": "sales.operacion",
+            "view_mode": "tree,form",
+            "domain": [("cliente_id", "=", self.cliente_id.id)],
+            "context": {
+                "default_cliente_id": self.cliente_id.id,
+                "search_default_group_cliente": 1,
             },
-            "target": "current",  # Abrir en la ventana actual
+            "target": "current",
         }
