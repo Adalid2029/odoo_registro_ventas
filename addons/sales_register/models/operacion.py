@@ -52,10 +52,10 @@ class Operacion(models.Model):  # Define un modelo/tabla en la base de datos
     )
 
     # unidad = fields.Char(string="Unidad", size=250)  # Campo texto
-    unidad = fields.Many2one('sales.unidad_medida', string="Unidad", required=True)
+    unidad = fields.Many2one('sales.unidad_medida', string="Unidad")
 
     # tipo = fields.Char(string="Tipo", size=250)  # Campo texto
-    tipo = fields.Many2one('sales.tipo', string="Tipo", required=True)  # Relación con tipo de producto
+    tipo = fields.Many2one('sales.tipo', string="Tipo")  # Relación con tipo de producto
     cantidad_kg = fields.Float(
         string="Cantidad (Kg)", digits=(10, 2)
     )  # Campo decimal: 10 dígitos totales, 2 decimales
